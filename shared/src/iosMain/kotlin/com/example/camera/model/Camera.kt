@@ -1,55 +1,46 @@
 package com.example.camera.model
 
-import kotlinx.coroutines.coroutineScope
 import platform.AVFoundation.*
-import platform.CoreMedia.CMSampleBufferRef
 import platform.CoreVideo.kCVPixelBufferPixelFormatTypeKey
 import platform.CoreVideo.kCVPixelFormatType_32BGRA
 import platform.Foundation.NSNumber
-import platform.darwin.NSObject
-import platform.darwin.NSObjectProtocol
 
-actual class Camera : AVCaptureVideoDataOutputSampleBufferDelegateProtocol, NSObjectProtocol by NSObject() {
+actual class Camera {
 
     private val captureSession = AVCaptureSession()
     private val graphics = AVCaptureVideoDataOutput()
 
     init {
+        captureSession.sessionPreset = AVCaptureSessionPresetInputPriority
+    }
+
+    fun preview() {
+        if (!captureSession.running) captureSession.startRunning()
+    }
+
+    fun setOutput(
+        device: AVCaptureDevice,
+        delegate: AVCaptureVideoDataOutputSampleBufferDelegateProtocol
+    ) {
         captureSession.beginConfiguration()
         captureSession.sessionPreset = AVCaptureSessionPresetInputPriority
 
-        val device = AVCaptureDevice.defaultDeviceWithMediaType(AVMediaTypeVideo)!!
         val input = AVCaptureDeviceInput(device, null)
-
         if (captureSession.canAddInput(input)) {
             captureSession.addInput(input)
         }
-
-        coroutineScope {  }
-
-        val preview = AVCaptureVideoPreviewLayer(captureSession)
-        preview.videoGravity = AVLayerVideoGravityResizeAspectFill
-        preview.connection?.videoOrientation = AVCaptureVideoOrientationPortrait
 
         graphics.videoSettings = mapOf(
             kCVPixelBufferPixelFormatTypeKey to NSNumber(kCVPixelFormatType_32BGRA)
         )
         graphics.alwaysDiscardsLateVideoFrames = true
-        graphics.setSampleBufferDelegate(this, null)
+        graphics.setSampleBufferDelegate(delegate, null)
         if (captureSession.canAddOutput(graphics)) {
             captureSession.addOutput(graphics)
         }
 
         graphics.connectionWithMediaType(AVMediaTypeVideo)?.videoOrientation = AVCaptureVideoOrientationPortrait
         captureSession.commitConfiguration()
-    }
-
-    override fun captureOutput(
-        output: AVCaptureOutput,
-        didOutputSampleBuffer: CMSampleBufferRef?,
-        fromConnection: AVCaptureConnection
-    ) {
-        super.captureOutput(output, didOutputSampleBuffer, fromConnection)
     }
 
 }

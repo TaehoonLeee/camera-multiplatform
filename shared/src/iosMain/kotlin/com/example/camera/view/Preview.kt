@@ -7,16 +7,16 @@ import org.jetbrains.skiko.SkikoView
 import platform.CoreFoundation.kCFAllocatorDefault
 import platform.CoreVideo.CVMetalTextureCacheCreate
 import platform.CoreVideo.CVMetalTextureCacheRefVar
-import platform.Metal.MTLCommandQueueProtocol
-import platform.Metal.MTLComputePipelineStateProtocol
-import platform.Metal.MTLCreateSystemDefaultDevice
+import platform.Metal.*
 import platform.MetalKit.MTKView
+import platform.darwin.at_texel_format_bgra8_unorm
 
 actual class Preview : MTKView(), SkikoView {
 
 	private val commandQueue: MTLCommandQueueProtocol?
-	private val pipelineState: MTLComputePipelineStateProtocol?
+	private val pipelineState: MTLRenderPipelineStateProtocol?
 	private var textureCache: CValuesRef<CVMetalTextureCacheRefVar>? = null
+
 	init {
 		val device = requireNotNull(MTLCreateSystemDefaultDevice()) {
 			error("Unable to initialize GPU device")
@@ -24,8 +24,17 @@ actual class Preview : MTKView(), SkikoView {
 		commandQueue = device.newCommandQueue()
 
 		val library = device.newDefaultLibrary()
-		val function = requireNotNull(library?.newFunctionWithName("passthroughKernel"))
-		pipelineState = device.newComputePipelineStateWithFunction(function, null)
+		val vertexFunction = requireNotNull(library?.newFunctionWithName("vertexPassThrough"))
+		val fragmentFunction = requireNotNull(library?.newFunctionWithName("fragmentPassThrough"))
+
+		val pipelineDescriptor = MTLRenderPipelineDescriptor()
+		pipelineDescriptor.vertexFunction = vertexFunction
+		pipelineDescriptor.fragmentFunction = fragmentFunction
+		pipelineDescriptor.colorAttachments.objectAtIndexedSubscript(0).pixelFormat = at_texel_format_bgra8_unorm
+
+		pipelineState = device.newRenderPipelineStateWithDescriptor(
+			pipelineDescriptor, MTLPipelineOptionNone,null, null
+		)
 
 		CVMetalTextureCacheCreate(kCFAllocatorDefault, null, device, null, textureCache)
 	}
