@@ -1,5 +1,6 @@
 package com.example.camera.model
 
+import kotlinx.coroutines.coroutineScope
 import platform.AVFoundation.*
 import platform.CoreMedia.CMSampleBufferRef
 import platform.CoreVideo.kCVPixelBufferPixelFormatTypeKey
@@ -23,6 +24,8 @@ actual class Camera : AVCaptureVideoDataOutputSampleBufferDelegateProtocol, NSOb
         if (captureSession.canAddInput(input)) {
             captureSession.addInput(input)
         }
+
+        coroutineScope {  }
 
         val preview = AVCaptureVideoPreviewLayer(captureSession)
         preview.videoGravity = AVLayerVideoGravityResizeAspectFill

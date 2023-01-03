@@ -1,3 +1,3 @@
 package com.example.camera.view
 
-expect class FrameworkTextureView
+expect class Preview
