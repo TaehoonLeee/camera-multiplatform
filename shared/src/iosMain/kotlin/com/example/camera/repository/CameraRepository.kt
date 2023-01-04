@@ -4,6 +4,6 @@ import com.example.camera.model.Camera
 
 actual class CameraRepository {
     actual fun getCamera(): Camera {
-        TODO("Not yet implemented")
+        return Camera()
     }
 }
