@@ -36,7 +36,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 }
 
-class PreviewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDelegate {
+class PreviewController: UIViewController {
     
     private var preview: Preview!
     private var camera: Camera!
@@ -47,13 +47,7 @@ class PreviewController: UIViewController, AVCaptureVideoDataOutputSampleBufferD
         camera = Camera()
         preview = Preview(frame: UIScreen.main.bounds, device: MTLCreateSystemDefaultDevice())
         view.addSubview(preview)
-        camera.setOutput(delegate: self)
-    }
-    
-    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        DispatchQueue.main.async {
-            self.preview.pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
-        }
+        camera.setOutput(delegate: preview)
     }
 }
 
@@ -82,26 +76,19 @@ class Camera {
         
         videoOutput.connection(with: AVMediaType.video)?.videoOrientation = .portrait
         captureSession.startRunning()
-    }    
+    }
 }
 
-class Preview : MTKView {
+class Preview : MTKView, AVCaptureVideoDataOutputSampleBufferDelegate {
     
     private let DEFAULT_IMAGE_VERTICES: [Float] = [-1, 1, 1, 1, -1, -1, 1, -1]
     private let DEFAULT_TEXTURE_COORDINATE: [Float] = [0, 0, 1, 0, 0, 1, 1, 1]
-    
-    var pixelBuffer: CVPixelBuffer? {
-        didSet {
-            setNeedsDisplay()
-        }
-    }
     
     private var commandQueue: MTLCommandQueue
     private var textureCache: CVMetalTextureCache?
     private var pipelineState: MTLComputePipelineState
     
     required override init(frame frameRect: CGRect, device: MTLDevice?) {
-        pixelBuffer = nil
         commandQueue = device!.makeCommandQueue()!
         
         do {
@@ -123,16 +110,8 @@ class Preview : MTKView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func draw(_ rect: CGRect) {
-        autoreleasepool {
-            if !rect.isEmpty {
-                render()
-            }
-        }
-    }
-    
-    private func render() {
-        guard let imageBuffer = pixelBuffer else { return }
+    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        guard let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
         let width = CVPixelBufferGetWidth(imageBuffer)
         let height = CVPixelBufferGetHeight(imageBuffer)
         
