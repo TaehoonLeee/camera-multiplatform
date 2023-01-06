@@ -2,36 +2,30 @@ package com.example.camera
 
 import com.example.camera.model.Camera
 import com.example.camera.view.FrameworkTextureView
-import org.jetbrains.skiko.GenericSkikoView
-import org.jetbrains.skiko.SkiaLayer
-import org.jetbrains.skiko.SkikoUIView
-import org.jetbrains.skiko.SkikoViewController
-import platform.AVFoundation.AVCaptureDevice
-import platform.Metal.MTLDeviceProtocol
+import platform.Foundation.NSCoder
+import platform.Metal.MTLCreateSystemDefaultDevice
+import platform.UIKit.UIScreen
+import platform.UIKit.UIViewController
+import platform.UIKit.addSubview
 
 class PreviewControllerBuilder {
+	fun create() = PreviewController()
+}
 
-	private val camera = Camera()
-	private val textureView = FrameworkTextureView()
+class PreviewController : UIViewController {
 
-	fun setMetalDevice(device: MTLDeviceProtocol) {
-		textureView.configuration(device)
-	}
+	@OverrideInit
+	constructor() : super(nibName = null, bundle = null)
 
-	fun setVideoDevice(device: AVCaptureDevice) {
-		camera.setDevice(device)
-	}
+	@OverrideInit
+	constructor(coder: NSCoder) : super(coder)
 
-	fun create(videoSettings: Map<Any?, *>): SkikoViewController {
-		camera.preview()
-		camera.setOutput(videoSettings, textureView.bufferProcessor)
+	override fun viewDidLoad() {
+		super.viewDidLoad()
 
-		return SkikoViewController(
-			SkikoUIView(
-				SkiaLayer().apply {
-					skikoView = GenericSkikoView(this, textureView)
-				}
-			)
-		)
+		val camera = Camera()
+		val textureView = FrameworkTextureView(UIScreen.mainScreen.bounds, MTLCreateSystemDefaultDevice())
+		view.addSubview(textureView)
+		camera.setOutput(textureView)
 	}
 }

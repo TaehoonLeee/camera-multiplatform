@@ -1,54 +1,39 @@
 package com.example.camera.model
 
-import kotlinx.cinterop.pointed
 import platform.AVFoundation.*
-import platform.CoreFoundation.CFStringRefVar
 import platform.CoreVideo.kCVPixelBufferPixelFormatTypeKey
 import platform.CoreVideo.kCVPixelFormatType_32BGRA
-import platform.Foundation.NSNumber
-import platform.Foundation.NSString
-import platform.darwin.DISPATCH_QUEUE_CONCURRENT
+import platform.Foundation.CFBridgingRelease
+import platform.darwin.dispatch_queue_create
 
 actual class Camera {
 
-    private lateinit var camera: AVCaptureDevice
-
     private val captureSession = AVCaptureSession()
     private val graphics = AVCaptureVideoDataOutput()
-
-    init {
-        captureSession.sessionPreset = AVCaptureSessionPresetInputPriority
-    }
-
-    fun setDevice(device: AVCaptureDevice) {
-        camera = device
-    }
-
-    fun preview() {
-        if (!captureSession.running) captureSession.startRunning()
+    private val camera = requireNotNull(AVCaptureDevice.defaultDeviceWithMediaType(AVMediaTypeVideo)) {
+        error("AVCapture Device returns null")
     }
 
     fun setOutput(
-        videoSettings: Map<Any?, *>,
         delegate: AVCaptureVideoDataOutputSampleBufferDelegateProtocol
     ) {
-        captureSession.beginConfiguration()
-        captureSession.sessionPreset = AVCaptureSessionPresetInputPriority
+        captureSession.sessionPreset = AVCaptureSessionPreset1920x1080
 
         val input = AVCaptureDeviceInput(camera, null)
         if (captureSession.canAddInput(input)) {
             captureSession.addInput(input)
         }
 
-        graphics.videoSettings = videoSettings
+        graphics.videoSettings = mapOf(CFBridgingRelease(kCVPixelBufferPixelFormatTypeKey) as String to kCVPixelFormatType_32BGRA)
         graphics.alwaysDiscardsLateVideoFrames = true
-        graphics.setSampleBufferDelegate(delegate, DISPATCH_QUEUE_CONCURRENT)
+        graphics.setSampleBufferDelegate(delegate, dispatch_queue_create("Camera Worker", null))
         if (captureSession.canAddOutput(graphics)) {
             captureSession.addOutput(graphics)
         }
 
         graphics.connectionWithMediaType(AVMediaTypeVideo)?.videoOrientation = AVCaptureVideoOrientationPortrait
-        captureSession.commitConfiguration()
+
+        captureSession.startRunning()
     }
 
 }
