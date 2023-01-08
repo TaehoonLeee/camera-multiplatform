@@ -1,6 +1,6 @@
 package com.example.camera
 
-import com.example.camera.model.Camera
+import com.example.camera.camera.Camera
 import com.example.camera.view.FrameworkTextureView
 import platform.Foundation.NSCoder
 import platform.Metal.MTLCreateSystemDefaultDevice

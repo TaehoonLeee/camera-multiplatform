@@ -1,4 +1,4 @@
-package com.example.camera.model
+package com.example.camera.camera
 
 import platform.AVFoundation.*
 import platform.CoreVideo.kCVPixelBufferPixelFormatTypeKey

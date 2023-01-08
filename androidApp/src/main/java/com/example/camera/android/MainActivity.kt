@@ -1,21 +1,16 @@
 package com.example.camera.android
 
+import android.Manifest
+import android.app.Activity
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.viewinterop.AndroidView
-import com.example.camera.view.FrameworkTextureView
 
-class MainActivity : ComponentActivity() {
+class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            AndroidView(
-                factory = ::FrameworkTextureView,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
+
+        setContentView(R.layout.act_main)
+
+        checkSelfPermission(Manifest.permission.CAMERA)
+        requestPermissions(arrayOf(Manifest.permission.CAMERA), 1234)
     }
 }
