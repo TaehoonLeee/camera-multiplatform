@@ -12,7 +12,6 @@ import shared
 import AVFoundation
 
 let VERTEX_SHADER =
-    "attribute vec4 a_position;\n" +
         "attribute vec4 aPosition;\n" +
         "attribute vec4 aTextureCoord;\n" +
         "varying vec2 vTextureCoord;\n" +
@@ -36,16 +35,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]?) -> Bool {
-//        window = UIWindow(frame: UIScreen.main.bounds)
-//        window?.rootViewController = PreviewKt.createPreviewController()
-//        window?.makeKeyAndVisible()
-        let camera = Device()
-        let cameraViewController = CameraViewController()
         window = UIWindow(frame: UIScreen.main.bounds)
-        window?.rootViewController = cameraViewController
+        window?.rootViewController = PreviewKt.createPreviewController()
         window?.makeKeyAndVisible()
-
-        camera.setOutput(delegate: cameraViewController)
 
         return true
     }
