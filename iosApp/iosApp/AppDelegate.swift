@@ -61,14 +61,6 @@ class CameraViewController : GLKViewController, AVCaptureVideoDataOutputSampleBu
 
     private let VERTEX_BUF: [Float] = [-1, -1, 1, -1, -1, 1, 1, 1]
     private let TEX_BUF: [Float] = [0, 0, 1, 0, 0, 1, 1, 1]
-    private let IDENTITY_MATRIX: [Float] = [
-        1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1
-    ]
-    
-    private let renderQueue = DispatchQueue(label: "Render Worker")
     
     override func viewDidLoad() {
         guard let _context = EAGLContext(api: .openGLES3) else { return print("Failed to create ES Context") }
