@@ -6,7 +6,7 @@ import platform.CoreVideo.kCVPixelFormatType_32BGRA
 import platform.Foundation.CFBridgingRelease
 import platform.darwin.dispatch_queue_create
 
-actual class Camera {
+actual class Device {
 
     private val captureSession = AVCaptureSession()
     private val graphics = AVCaptureVideoDataOutput()
@@ -26,7 +26,7 @@ actual class Camera {
 
         graphics.videoSettings = mapOf(CFBridgingRelease(kCVPixelBufferPixelFormatTypeKey) as String to kCVPixelFormatType_32BGRA)
         graphics.alwaysDiscardsLateVideoFrames = true
-        graphics.setSampleBufferDelegate(delegate, dispatch_queue_create("Camera Worker", null))
+        graphics.setSampleBufferDelegate(delegate, dispatch_queue_create("Device Worker", null))
         if (captureSession.canAddOutput(graphics)) {
             captureSession.addOutput(graphics)
         }

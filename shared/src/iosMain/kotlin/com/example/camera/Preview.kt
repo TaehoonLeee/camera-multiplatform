@@ -1,6 +1,6 @@
 package com.example.camera
 
-import com.example.camera.camera.Camera
+import com.example.camera.camera.Device
 import com.example.camera.view.FrameworkTextureView
 import platform.Foundation.NSCoder
 import platform.UIKit.UIScreen
@@ -20,9 +20,9 @@ class PreviewController : UIViewController {
 	override fun viewDidLoad() {
 		super.viewDidLoad()
 
-		val camera = Camera()
+		val device = Device()
 		val textureView = FrameworkTextureView(UIScreen.mainScreen.bounds)
 		view.addSubview(textureView)
-		camera.setOutput(textureView)
+		device.setOutput(textureView)
 	}
 }

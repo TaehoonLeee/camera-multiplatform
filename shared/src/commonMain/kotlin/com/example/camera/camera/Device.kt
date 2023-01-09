@@ -1,3 +1,3 @@
 package com.example.camera.camera
 
-expect class Camera
+expect class Device

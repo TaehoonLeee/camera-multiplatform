@@ -7,8 +7,6 @@
 //
 
 import UIKit
-import AVFoundation
-import MetalKit
 import shared
 
 @main
