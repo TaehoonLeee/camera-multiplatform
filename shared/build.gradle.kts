@@ -9,7 +9,6 @@ plugins {
 kotlin {
     android()
 
-    val xcFramework = XCFramework()
     listOf(
         iosX64(),
         iosArm64(),
@@ -18,7 +17,6 @@ kotlin {
         it.binaries.framework {
             isStatic = true
             baseName = "shared"
-            xcFramework.add(this)
         }
     }
 
@@ -31,7 +29,7 @@ kotlin {
         getByName("androidMain").dependencies {
             implementation(compose.foundation)
         }
-        val iosMain by creating {
+        create("iosMain") {
             dependsOn(commonMain)
             getByName("iosX64Main").dependsOn(this)
             getByName("iosArm64Main").dependsOn(this)
