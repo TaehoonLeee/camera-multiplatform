@@ -1,7 +1,7 @@
 package com.example.camera.view
 
-import com.example.camera.gles.BYPASS_VERTEX_SHADER
 import com.example.camera.gles.BYPASS_FRAGMENT_SHADER
+import com.example.camera.gles.BYPASS_VERTEX_SHADER
 import kotlinx.cinterop.*
 import platform.AVFoundation.AVCaptureConnection
 import platform.AVFoundation.AVCaptureOutput
@@ -14,7 +14,6 @@ import platform.CoreVideo.*
 import platform.EAGL.EAGLContext
 import platform.EAGL.kEAGLRenderingAPIOpenGLES2
 import platform.Foundation.NSCoder
-import platform.GLKit.GLKTextureTarget2D
 import platform.GLKit.GLKView
 import platform.gles2.*
 import platform.glescommon.GLenum
@@ -36,10 +35,6 @@ class FrameworkTextureView : GLKView, AVCaptureVideoDataOutputSampleBufferDelega
 		glGetAttribLocation(program, "aTextureCoord").toUInt()
 	}
 
-	private val uMVPMatrixLoc by lazy(LazyThreadSafetyMode.NONE) {
-		glGetUniformLocation(program, "uMVPMatrix")
-	}
-
 	private var program = 0u
 	private val textureCache: CVOpenGLESTextureCacheRefVar = memScoped { alloc() }
 
@@ -59,7 +54,7 @@ class FrameworkTextureView : GLKView, AVCaptureVideoDataOutputSampleBufferDelega
 			textureCache = textureCache.value,
 			sourceImage = imageBuffer,
 			textureAttributes = null,
-			target = GLKTextureTarget2D,
+			target = GL_TEXTURE_2D,
 			internalFormat = GL_RGBA,
 			width = width.toInt(),
 			height = height.toInt(),
@@ -77,8 +72,6 @@ class FrameworkTextureView : GLKView, AVCaptureVideoDataOutputSampleBufferDelega
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
-
-		glUniformMatrix4fv(uMVPMatrixLoc, 1, GL_FALSE.convert(), IDENTITY_MATRIX.refTo(0))
 
 		glEnableVertexAttribArray(aPositionLoc)
 		glVertexAttribPointer(aPositionLoc, 2, GL_FLOAT, GL_FALSE.convert(), 8, FULL_RECT_COORDS.refTo(0))
