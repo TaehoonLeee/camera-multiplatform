@@ -6,8 +6,9 @@ uniform mat4 texMatrix;
 varying vec2 vTextureCoord;
 
 void main() {
-	gl_Position = vPosition;
-	vTextureCoord = (texMatrix * vPosition).xy;
+    gl_Position = vPosition;
+    vec4 texCoord = vec4((vPosition.xy + vec2(1.0, 1.0)) / 2.0, 0.0, 1.0);
+    vTextureCoord = (texMatrix * texCoord).xy;
 }
 """
 
@@ -23,14 +24,9 @@ void main() {
 }
 """
 
-internal val DEFAULT_IMAGE_VERTICES = floatArrayOf(
-	-1f, 1f, 1f, 1f,
-	-1f, -1f, 1f, -1f
-)
-
-internal val DEFAULT_TEXTURE_COORDINATE = floatArrayOf(
-	0f, 0f, 1f, 0f,
-	0f, 1f, 1f, 1f
+internal val FULL_RECT_COORDS = floatArrayOf(
+	-1f, -1f, 1f, -1f,
+	-1f, 1f, 1f, 1f
 )
 
 //expect class FrameworkTextureView() : SkikoView

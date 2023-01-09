@@ -13,19 +13,30 @@ import java.nio.ByteOrder
 import java.nio.IntBuffer
 
 class FrameworkTextureView(context: Context, attributeSet: AttributeSet) :
-    SurfaceView(context, attributeSet), SurfaceHolder.Callback, SurfaceTexture.OnFrameAvailableListener {
+    SurfaceHolder.Callback,
+    SurfaceView(context, attributeSet),
+    SurfaceTexture.OnFrameAvailableListener {
 
-    private val texMatrix by lazy(LazyThreadSafetyMode.NONE) {
-        GLES20.glGetUniformLocation(id, "texMatrix")
+    private val FULL_RECT_BUF = run {
+        val nativeBuffer = ByteBuffer.allocateDirect(32)
+        nativeBuffer.order(ByteOrder.nativeOrder())
+        nativeBuffer.asFloatBuffer().also {
+            it.put(FULL_RECT_COORDS)
+            it.position(0)
+        }
     }
 
-    private val vPosition by lazy(LazyThreadSafetyMode.NONE) {
-        GLES20.glGetAttribLocation(id, "vPosition")
+    private val vPositionLoc by lazy(LazyThreadSafetyMode.NONE) {
+        GLES20.glGetAttribLocation(program, "vPosition")
+    }
+
+    private val texMatrixLoc by lazy(LazyThreadSafetyMode.NONE) {
+        GLES20.glGetUniformLocation(program, "texMatrix")
     }
 
     private var texId: Int = -1
     private var program: Int = -1
-    private val scratchMatrix = FloatArray(16)
+    private val texMatrix = FloatArray(16)
 
     private lateinit var eglConfig: EGLConfig
     private lateinit var eglContext: EGLContext
@@ -41,35 +52,14 @@ class FrameworkTextureView(context: Context, attributeSet: AttributeSet) :
 
     override fun surfaceCreated(holder: SurfaceHolder) {
         initEGL()
-
-        val vertexShader = createShader(GLES20.GL_VERTEX_SHADER, BYPASS_VERTEX_SHADER)
-        val fragmentShader = createShader(GLES20.GL_FRAGMENT_SHADER, BYPASS_FRAGMENT_SHADER)
-        program = GLES20.glCreateProgram()
-        GLES20.glAttachShader(program, vertexShader)
-        GLES20.glAttachShader(program, fragmentShader)
-        GLES20.glLinkProgram(program)
-
-        val buf = IntBuffer.allocate(1)
-        GLES20.glGenBuffers(1, buf)
-
-        texId = buf[0]
-        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, texId)
-        GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST)
-        GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR)
-        GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE)
-        GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE)
-
-        cameraTexture = SurfaceTexture(texId)
-        cameraTexture.setOnFrameAvailableListener(this)
-        cameraTexture.setDefaultBufferSize(1920, 1080)
-        cameraSurface = Surface(cameraTexture)
+        createResources()
 
         val camera = Camera(context)
         camera.open(cameraSurface)
     }
 
-    override fun surfaceChanged(p0: SurfaceHolder, p1: Int, p2: Int, p3: Int) = Unit
-    override fun surfaceDestroyed(p0: SurfaceHolder) = Unit
+    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) = Unit
+    override fun surfaceDestroyed(holder: SurfaceHolder) = Unit
 
     override fun onFrameAvailable(p0: SurfaceTexture?) {
         cameraTexture.updateTexImage()
@@ -78,17 +68,11 @@ class FrameworkTextureView(context: Context, attributeSet: AttributeSet) :
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, texId)
 
-        cameraTexture.getTransformMatrix(scratchMatrix)
-        GLES20.glUniformMatrix4fv(texMatrix, 1, false, scratchMatrix, 0)
+        cameraTexture.getTransformMatrix(texMatrix)
+        GLES20.glUniformMatrix4fv(texMatrixLoc, 1, false, texMatrix, 0)
 
-        val nativeBuffer = ByteBuffer.allocateDirect(32)
-        nativeBuffer.order(ByteOrder.nativeOrder())
-        val vertexBuffer = nativeBuffer.asFloatBuffer()
-        vertexBuffer.put(DEFAULT_IMAGE_VERTICES)
-        nativeBuffer.position(0)
-        vertexBuffer.position(0)
-        GLES20.glEnableVertexAttribArray(vPosition)
-        GLES20.glVertexAttribPointer(vPosition, 2, GLES20.GL_FLOAT, false, 0, vertexBuffer)
+        GLES20.glEnableVertexAttribArray(vPositionLoc)
+        GLES20.glVertexAttribPointer(vPositionLoc, 2, GLES20.GL_FLOAT, false, 8, FULL_RECT_BUF)
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
         EGL14.eglSwapBuffers(eglDisplay, eglSurface)
@@ -131,5 +115,29 @@ class FrameworkTextureView(context: Context, attributeSet: AttributeSet) :
         GLES20.glCompileShader(shader)
 
         return shader
+    }
+
+    private fun createResources() {
+        val vertexShader = createShader(GLES20.GL_VERTEX_SHADER, BYPASS_VERTEX_SHADER)
+        val fragmentShader = createShader(GLES20.GL_FRAGMENT_SHADER, BYPASS_FRAGMENT_SHADER)
+        program = GLES20.glCreateProgram()
+        GLES20.glAttachShader(program, vertexShader)
+        GLES20.glAttachShader(program, fragmentShader)
+        GLES20.glLinkProgram(program)
+
+        val buf = IntBuffer.allocate(1)
+        GLES20.glGenBuffers(1, buf)
+
+        texId = buf[0]
+        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, texId)
+        GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST)
+        GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR)
+        GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE)
+        GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE)
+
+        cameraTexture = SurfaceTexture(texId)
+        cameraTexture.setOnFrameAvailableListener(this)
+        cameraTexture.setDefaultBufferSize(1920, 1080)
+        cameraSurface = Surface(cameraTexture)
     }
 }
