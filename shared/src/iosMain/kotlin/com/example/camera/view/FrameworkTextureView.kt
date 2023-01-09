@@ -9,68 +9,92 @@ import platform.CoreGraphics.CGRect
 import platform.CoreMedia.CMSampleBufferGetImageBuffer
 import platform.CoreMedia.CMSampleBufferRef
 import platform.CoreVideo.*
-import platform.Foundation.NSError
-import platform.Metal.*
-import platform.MetalKit.MTKView
+import platform.EAGL.EAGLContext
+import platform.EAGL.kEAGLRenderingAPIOpenGLES2
+import platform.GLKit.GLKTextureTarget2D
+import platform.GLKit.GLKView
+import platform.gles2.*
+import platform.glescommon.GLenum
+import platform.glescommon.GLuint
 
 @ExportObjCClass
-class FrameworkTextureView : MTKView, AVCaptureVideoDataOutputSampleBufferDelegateProtocol {
+class FrameworkTextureView : GLKView, AVCaptureVideoDataOutputSampleBufferDelegateProtocol {
 
 	@OverrideInit
-	constructor(frame: CValue<CGRect>, device: MTLDeviceProtocol?) : super(frame, device) {
-		this.device = device
+	constructor(frame: CValue<CGRect>) : super(frame)
+
+	private val vPositionLoc by lazy(LazyThreadSafetyMode.NONE) {
+		glGetAttribLocation(program, "vPosition").toUInt()
 	}
 
-	private val commandQueue = device?.newCommandQueue()
-	private val textureCache: CVMetalTextureCacheRefVar = memScoped { alloc() }
-	private val pipelineState = run {
-		val library = requireNotNull(device?.newDefaultLibrary())
-		val function = requireNotNull(library.newFunctionWithName("bypassKernel"))
-		val error: CPointer<ObjCObjectVar<NSError?>>? = null
-		requireNotNull(device?.newComputePipelineStateWithFunction(function, error))
+	private val texMatrixLoc by lazy(LazyThreadSafetyMode.NONE) {
+		glGetUniformLocation(program, "texMatrix")
 	}
+
+	private val program = glCreateProgram()
+	private val textureCache: CVOpenGLESTextureCacheRefVar = memScoped { alloc() }
+	private val texMatrix = floatArrayOf(
+		1f, 0f, 0f, 0f,
+		0f, 1f, 0f, 0f,
+		0f, 0f, 1f, 0f,
+		0f, 0f, 0f, 1f
+	)
 
 	init {
-		this.framebufferOnly = false
-		CVMetalTextureCacheCreate(kCFAllocatorDefault, null, device!!, null, textureCache.ptr)
+		context = EAGLContext(kEAGLRenderingAPIOpenGLES2)
+		EAGLContext.setCurrentContext(context)
+		CVOpenGLESTextureCacheCreate(kCFAllocatorDefault, null, context, null, textureCache.ptr)
+		createResources()
 	}
 
 	override fun captureOutput(output: AVCaptureOutput, didOutputSampleBuffer: CMSampleBufferRef?, fromConnection: AVCaptureConnection) {
 		val imageBuffer = CMSampleBufferGetImageBuffer(didOutputSampleBuffer)
 		val (width, height) = CVPixelBufferGetWidth(imageBuffer) to CVPixelBufferGetHeight(imageBuffer)
-
-		val cvTexture: CVMetalTextureRefVar = memScoped { alloc() }
-		val error = CVMetalTextureCacheCreateTextureFromImage(
-			kCFAllocatorDefault, textureCache.value, imageBuffer, null, MTLPixelFormatBGRA8Unorm, width, height, 0, cvTexture.ptr
+		val cvTexture: CVOpenGLESTextureRefVar = memScoped { alloc() }
+		val error = CVOpenGLESTextureCacheCreateTextureFromImage(
+			allocator = kCFAllocatorDefault,
+			textureCache = textureCache.value,
+			sourceImage = imageBuffer,
+			textureAttributes = null,
+			target = GLKTextureTarget2D,
+			internalFormat = GL_RGBA,
+			width = width.toInt(),
+			height = height.toInt(),
+			format = GL_BGRA,
+			type = GL_UNSIGNED_BYTE,
+			planeIndex = 0,
+			textureOut = cvTexture.ptr
 		)
 
-		println(error)
+		glUseProgram(program)
+		glActiveTexture(GL_TEXTURE0)
+		glBindTexture(CVOpenGLESTextureGetTarget(cvTexture.value), CVOpenGLESTextureGetName(cvTexture.value))
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
 
-		val texture = CVMetalTextureGetTexture(cvTexture.value)?: error("Could not get texture from texture ref")
-		CVBufferRelease(cvTexture.value)
+		glUniformMatrix4fv(texMatrixLoc, 1, GL_FALSE.convert(), texMatrix.refTo(0))
 
-		val commandBuffer = commandQueue?.commandBuffer()
-		val computeCommandEncoder = commandBuffer?.computeCommandEncoder()
-		computeCommandEncoder?.let {
-			computeCommandEncoder.setComputePipelineState(pipelineState)
-			computeCommandEncoder.setTexture(texture, 0)
-			computeCommandEncoder.setTexture(currentDrawable?.texture, 1)
-			computeCommandEncoder.dispatchThreadgroups(texture.threadGroups(), texture.threadGroupCount())
-			computeCommandEncoder.endEncoding()
+		glEnableVertexAttribArray(vPositionLoc)
+		glVertexAttribPointer(vPositionLoc, 2, GL_FLOAT, GL_FALSE.convert(), 8, FULL_RECT_COORDS.refTo(0))
 
-			commandBuffer.presentDrawable(currentDrawable!!)
-			commandBuffer.commit()
-		}
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4)
 	}
 
-	private fun MTLTextureProtocol.threadGroupCount() = MTLSizeMake(8, 8, 1)
-	private fun MTLTextureProtocol.threadGroups(): CValue<MTLSize> {
-		val (textureWidth, textureHeight) = width to height
+	private fun createResources() = memScoped {
+		val vertexShader = createShader(GL_VERTEX_SHADER.convert(), BYPASS_VERTEX_SHADER)
+		val fragmentShader = createShader(GL_FRAGMENT_SHADER.convert(), BYPASS_FRAGMENT_SHADER)
+		glAttachShader(program, vertexShader)
+		glAttachShader(program, fragmentShader)
+		glLinkProgram(program)
+	}
 
-		return threadGroupCount().useContents {
-			val width = (textureWidth + width - 1u) / width
-			val height = (textureHeight + height - 1u) / height
-			MTLSizeMake(width, height, 1)
-		}
+	private fun MemScope.createShader(type: GLenum, source: String): GLuint {
+		val shader = glCreateShader(type)
+		glShaderSource(shader, 1, cValuesOf(source.cstr.ptr), null)
+		glCompileShader(shader)
+
+		return shader
 	}
 }
