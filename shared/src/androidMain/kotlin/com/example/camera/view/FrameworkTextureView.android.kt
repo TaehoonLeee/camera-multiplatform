@@ -7,7 +7,9 @@ import android.util.AttributeSet
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
-import com.example.camera.camera.Camera
+import com.example.camera.camera.Device
+import com.example.camera.gles.BYPASS_FRAGMENT_SHADER
+import com.example.camera.gles.BYPASS_VERTEX_SHADER
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.IntBuffer
@@ -26,12 +28,29 @@ class FrameworkTextureView(context: Context, attributeSet: AttributeSet) :
         }
     }
 
-    private val vPositionLoc by lazy(LazyThreadSafetyMode.NONE) {
-        GLES20.glGetAttribLocation(program, "vPosition")
+    private val FULL_RECT_TEX_BUF = run {
+        val nativeBuffer = ByteBuffer.allocateDirect(32)
+        nativeBuffer.order(ByteOrder.nativeOrder())
+        nativeBuffer.asFloatBuffer().also {
+            it.put(FULL_RECT_TEX_COORDS)
+            it.position(0)
+        }
     }
 
-    private val texMatrixLoc by lazy(LazyThreadSafetyMode.NONE) {
-        GLES20.glGetUniformLocation(program, "texMatrix")
+    private val aPositionLoc by lazy(LazyThreadSafetyMode.NONE) {
+        GLES20.glGetAttribLocation(program, "aPosition")
+    }
+
+    private val aTextureCoordLoc by lazy(LazyThreadSafetyMode.NONE) {
+        GLES20.glGetAttribLocation(program, "aTextureCoord")
+    }
+
+    private val uMVPMatrixLoc by lazy(LazyThreadSafetyMode.NONE) {
+        GLES20.glGetUniformLocation(program, "uMVPMatrix")
+    }
+
+    private val uTexMatrixLoc by lazy(LazyThreadSafetyMode.NONE) {
+        GLES20.glGetUniformLocation(program, "uTexMatrix")
     }
 
     private var texId: Int = -1
@@ -54,8 +73,8 @@ class FrameworkTextureView(context: Context, attributeSet: AttributeSet) :
         initEGL()
         createResources()
 
-        val camera = Camera(context)
-        camera.open(cameraSurface)
+        val device = Device(context)
+        device.open(cameraSurface)
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) = Unit
@@ -65,14 +84,20 @@ class FrameworkTextureView(context: Context, attributeSet: AttributeSet) :
         cameraTexture.updateTexImage()
 
         GLES20.glUseProgram(program)
+
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, texId)
 
-        cameraTexture.getTransformMatrix(texMatrix)
-        GLES20.glUniformMatrix4fv(texMatrixLoc, 1, false, texMatrix, 0)
+        GLES20.glUniformMatrix4fv(uMVPMatrixLoc, 1, false, IDENTITY_MATRIX, 0)
 
-        GLES20.glEnableVertexAttribArray(vPositionLoc)
-        GLES20.glVertexAttribPointer(vPositionLoc, 2, GLES20.GL_FLOAT, false, 8, FULL_RECT_BUF)
+        cameraTexture.getTransformMatrix(texMatrix)
+        GLES20.glUniformMatrix4fv(uTexMatrixLoc, 1, false, texMatrix, 0)
+
+        GLES20.glEnableVertexAttribArray(aPositionLoc)
+        GLES20.glVertexAttribPointer(aPositionLoc, 2, GLES20.GL_FLOAT, false, 8, FULL_RECT_BUF)
+
+        GLES20.glEnableVertexAttribArray(aTextureCoordLoc)
+        GLES20.glVertexAttribPointer(aTextureCoordLoc, 2, GLES20.GL_FLOAT, false, 8, FULL_RECT_TEX_BUF)
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
         EGL14.eglSwapBuffers(eglDisplay, eglSurface)

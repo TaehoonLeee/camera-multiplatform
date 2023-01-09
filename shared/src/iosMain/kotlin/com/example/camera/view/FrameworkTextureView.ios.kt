@@ -1,5 +1,7 @@
 package com.example.camera.view
 
+import com.example.camera.gles.BYPASS_VERTEX_SHADER
+import com.example.camera.gles.BYPASS_FRAGMENT_SHADER
 import kotlinx.cinterop.*
 import platform.AVFoundation.AVCaptureConnection
 import platform.AVFoundation.AVCaptureOutput
@@ -11,34 +13,35 @@ import platform.CoreMedia.CMSampleBufferRef
 import platform.CoreVideo.*
 import platform.EAGL.EAGLContext
 import platform.EAGL.kEAGLRenderingAPIOpenGLES2
+import platform.Foundation.NSCoder
 import platform.GLKit.GLKTextureTarget2D
 import platform.GLKit.GLKView
 import platform.gles2.*
 import platform.glescommon.GLenum
 import platform.glescommon.GLuint
 
-@ExportObjCClass
 class FrameworkTextureView : GLKView, AVCaptureVideoDataOutputSampleBufferDelegateProtocol {
 
 	@OverrideInit
 	constructor(frame: CValue<CGRect>) : super(frame)
 
-	private val vPositionLoc by lazy(LazyThreadSafetyMode.NONE) {
-		glGetAttribLocation(program, "vPosition").toUInt()
+	@OverrideInit
+	constructor(coder: NSCoder) : super(coder)
+
+	private val aPositionLoc by lazy(LazyThreadSafetyMode.NONE) {
+		glGetAttribLocation(program, "aPosition").toUInt()
 	}
 
-	private val texMatrixLoc by lazy(LazyThreadSafetyMode.NONE) {
-		glGetUniformLocation(program, "texMatrix")
+	private val aTextureCoordLoc by lazy(LazyThreadSafetyMode.NONE) {
+		glGetAttribLocation(program, "aTextureCoord").toUInt()
 	}
 
-	private val program = glCreateProgram()
+	private val uMVPMatrixLoc by lazy(LazyThreadSafetyMode.NONE) {
+		glGetUniformLocation(program, "uMVPMatrix")
+	}
+
+	private var program = 0u
 	private val textureCache: CVOpenGLESTextureCacheRefVar = memScoped { alloc() }
-	private val texMatrix = floatArrayOf(
-		1f, 0f, 0f, 0f,
-		0f, 1f, 0f, 0f,
-		0f, 0f, 1f, 0f,
-		0f, 0f, 0f, 1f
-	)
 
 	init {
 		context = EAGLContext(kEAGLRenderingAPIOpenGLES2)
@@ -67,6 +70,7 @@ class FrameworkTextureView : GLKView, AVCaptureVideoDataOutputSampleBufferDelega
 		)
 
 		glUseProgram(program)
+
 		glActiveTexture(GL_TEXTURE0)
 		glBindTexture(CVOpenGLESTextureGetTarget(cvTexture.value), CVOpenGLESTextureGetName(cvTexture.value))
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
@@ -74,10 +78,13 @@ class FrameworkTextureView : GLKView, AVCaptureVideoDataOutputSampleBufferDelega
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
 
-		glUniformMatrix4fv(texMatrixLoc, 1, GL_FALSE.convert(), texMatrix.refTo(0))
+		glUniformMatrix4fv(uMVPMatrixLoc, 1, GL_FALSE.convert(), IDENTITY_MATRIX.refTo(0))
 
-		glEnableVertexAttribArray(vPositionLoc)
-		glVertexAttribPointer(vPositionLoc, 2, GL_FLOAT, GL_FALSE.convert(), 8, FULL_RECT_COORDS.refTo(0))
+		glEnableVertexAttribArray(aPositionLoc)
+		glVertexAttribPointer(aPositionLoc, 2, GL_FLOAT, GL_FALSE.convert(), 8, FULL_RECT_COORDS.refTo(0))
+
+		glEnableVertexAttribArray(aTextureCoordLoc)
+		glVertexAttribPointer(aTextureCoordLoc, 2, GL_FLOAT, GL_FALSE.convert(), 8, FULL_RECT_TEX_COORDS.refTo(0))
 
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4)
 	}
@@ -85,6 +92,8 @@ class FrameworkTextureView : GLKView, AVCaptureVideoDataOutputSampleBufferDelega
 	private fun createResources() = memScoped {
 		val vertexShader = createShader(GL_VERTEX_SHADER.convert(), BYPASS_VERTEX_SHADER)
 		val fragmentShader = createShader(GL_FRAGMENT_SHADER.convert(), BYPASS_FRAGMENT_SHADER)
+
+		program = glCreateProgram()
 		glAttachShader(program, vertexShader)
 		glAttachShader(program, fragmentShader)
 		glLinkProgram(program)
