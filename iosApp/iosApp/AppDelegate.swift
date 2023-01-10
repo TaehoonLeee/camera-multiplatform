@@ -7,9 +7,7 @@
 //
 
 import UIKit
-import GLKit
 import shared
-import AVFoundation
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
