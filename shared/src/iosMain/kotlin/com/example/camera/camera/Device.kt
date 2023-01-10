@@ -4,7 +4,7 @@ import platform.AVFoundation.*
 import platform.CoreVideo.kCVPixelBufferPixelFormatTypeKey
 import platform.CoreVideo.kCVPixelFormatType_32BGRA
 import platform.Foundation.CFBridgingRelease
-import platform.darwin.dispatch_queue_create
+import platform.darwin.dispatch_get_main_queue
 
 actual class Device {
 
@@ -26,7 +26,7 @@ actual class Device {
 
         graphics.videoSettings = mapOf(CFBridgingRelease(kCVPixelBufferPixelFormatTypeKey) as String to kCVPixelFormatType_32BGRA)
         graphics.alwaysDiscardsLateVideoFrames = true
-        graphics.setSampleBufferDelegate(delegate, dispatch_queue_create("Device Worker", null))
+        graphics.setSampleBufferDelegate(delegate, dispatch_get_main_queue())
         if (captureSession.canAddOutput(graphics)) {
             captureSession.addOutput(graphics)
         }

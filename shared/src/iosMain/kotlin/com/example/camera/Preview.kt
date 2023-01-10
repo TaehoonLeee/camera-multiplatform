@@ -6,12 +6,10 @@ import com.example.camera.gles.BYPASS_VERTEX_SHADER
 import com.example.camera.view.FULL_RECT_COORDS
 import com.example.camera.view.FULL_RECT_TEX_COORDS
 import kotlinx.cinterop.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import platform.AVFoundation.AVCaptureConnection
 import platform.AVFoundation.AVCaptureOutput
 import platform.AVFoundation.AVCaptureVideoDataOutputSampleBufferDelegateProtocol
+import platform.CoreFoundation.CFRelease
 import platform.CoreFoundation.kCFAllocatorDefault
 import platform.CoreGraphics.CGRect
 import platform.CoreMedia.CMSampleBufferGetImageBuffer
@@ -36,7 +34,6 @@ class PreviewController : GLKViewController, AVCaptureVideoDataOutputSampleBuffe
 	constructor(coder: NSCoder) : super(coder)
 
 	private var program = 0u
-	private val mainScope = CoroutineScope(Dispatchers.Main.immediate)
 	private val textureCache: CVOpenGLESTextureCacheRefVar = nativeHeap.alloc()
 
 	private val aPositionLoc by lazy(LazyThreadSafetyMode.NONE) {
@@ -86,21 +83,21 @@ class PreviewController : GLKViewController, AVCaptureVideoDataOutputSampleBuffe
 				textureOut = cvTexture.ptr
 			)
 
-			mainScope.launch {
-				glActiveTexture(GL_TEXTURE0)
-				glBindTexture(CVOpenGLESTextureGetTarget(cvTexture.value), CVOpenGLESTextureGetName(cvTexture.value))
+			glActiveTexture(GL_TEXTURE0)
+			glBindTexture(CVOpenGLESTextureGetTarget(cvTexture.value), CVOpenGLESTextureGetName(cvTexture.value))
 
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
 
-				glEnableVertexAttribArray(aPositionLoc)
-				glVertexAttribPointer(aPositionLoc, 2, GL_FLOAT, GL_FALSE.convert(), 8, FULL_RECT_COORDS.refTo(0))
+			glEnableVertexAttribArray(aPositionLoc)
+			glVertexAttribPointer(aPositionLoc, 2, GL_FLOAT, GL_FALSE.convert(), 8, FULL_RECT_COORDS.refTo(0))
 
-				glEnableVertexAttribArray(aTextureCoordLoc)
-				glVertexAttribPointer(aTextureCoordLoc, 2, GL_FLOAT, GL_FALSE.convert(), 8, FULL_RECT_TEX_COORDS.refTo(0))
-			}
+			glEnableVertexAttribArray(aTextureCoordLoc)
+			glVertexAttribPointer(aTextureCoordLoc, 2, GL_FLOAT, GL_FALSE.convert(), 8, FULL_RECT_TEX_COORDS.refTo(0))
+
+			CFRelease(cvTexture.value)
 		}
 	}
 
