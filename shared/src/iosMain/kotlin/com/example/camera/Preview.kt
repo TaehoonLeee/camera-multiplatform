@@ -34,6 +34,7 @@ class PreviewController : GLKViewController, AVCaptureVideoDataOutputSampleBuffe
 	constructor(coder: NSCoder) : super(coder)
 
 	private var program = 0u
+	private val cvTexture: CVOpenGLESTextureRefVar = nativeHeap.alloc()
 	private val textureCache: CVOpenGLESTextureCacheRefVar = nativeHeap.alloc()
 
 	private val aPositionLoc by lazy(LazyThreadSafetyMode.NONE) {
@@ -66,39 +67,36 @@ class PreviewController : GLKViewController, AVCaptureVideoDataOutputSampleBuffe
 
 		CVOpenGLESTextureCacheFlush(textureCache.value, 0)
 
-		memScoped {
-			val cvTexture: CVOpenGLESTextureRefVar = alloc()
-			CVOpenGLESTextureCacheCreateTextureFromImage(
-				allocator = kCFAllocatorDefault,
-				textureCache = textureCache.value,
-				sourceImage = imageBuffer,
-				textureAttributes = null,
-				target = GL_TEXTURE_2D,
-				internalFormat = GL_RGBA,
-				width = width.toInt(),
-				height = height.toInt(),
-				format = GL_BGRA,
-				type = GL_UNSIGNED_BYTE,
-				planeIndex = 0,
-				textureOut = cvTexture.ptr
-			)
+		CVOpenGLESTextureCacheCreateTextureFromImage(
+			allocator = kCFAllocatorDefault,
+			textureCache = textureCache.value,
+			sourceImage = imageBuffer,
+			textureAttributes = null,
+			target = GL_TEXTURE_2D,
+			internalFormat = GL_RGBA,
+			width = width.toInt(),
+			height = height.toInt(),
+			format = GL_BGRA,
+			type = GL_UNSIGNED_BYTE,
+			planeIndex = 0,
+			textureOut = cvTexture.ptr
+		)
 
-			glActiveTexture(GL_TEXTURE0)
-			glBindTexture(CVOpenGLESTextureGetTarget(cvTexture.value), CVOpenGLESTextureGetName(cvTexture.value))
+		glActiveTexture(GL_TEXTURE0)
+		glBindTexture(CVOpenGLESTextureGetTarget(cvTexture.value), CVOpenGLESTextureGetName(cvTexture.value))
 
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
 
-			glEnableVertexAttribArray(aPositionLoc)
-			glVertexAttribPointer(aPositionLoc, 2, GL_FLOAT, GL_FALSE.convert(), 8, FULL_RECT_COORDS.refTo(0))
+		glEnableVertexAttribArray(aPositionLoc)
+		glVertexAttribPointer(aPositionLoc, 2, GL_FLOAT, GL_FALSE.convert(), 8, FULL_RECT_COORDS.refTo(0))
 
-			glEnableVertexAttribArray(aTextureCoordLoc)
-			glVertexAttribPointer(aTextureCoordLoc, 2, GL_FLOAT, GL_FALSE.convert(), 8, FULL_RECT_TEX_COORDS.refTo(0))
+		glEnableVertexAttribArray(aTextureCoordLoc)
+		glVertexAttribPointer(aTextureCoordLoc, 2, GL_FLOAT, GL_FALSE.convert(), 8, FULL_RECT_TEX_COORDS.refTo(0))
 
-			CFRelease(cvTexture.value)
-		}
+		CFRelease(cvTexture.value)
 	}
 
 	private fun createResources() = memScoped {
