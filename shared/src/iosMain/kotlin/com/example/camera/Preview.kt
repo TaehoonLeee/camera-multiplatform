@@ -37,7 +37,7 @@ class PreviewController : GLKViewController, AVCaptureVideoDataOutputSampleBuffe
 
 	private var program = 0u
 	private val mainScope = CoroutineScope(Dispatchers.Main.immediate)
-	private val textureCache: CVOpenGLESTextureCacheRefVar = memScoped { alloc() }
+	private val textureCache: CVOpenGLESTextureCacheRefVar = nativeHeap.alloc()
 
 	private val aPositionLoc by lazy(LazyThreadSafetyMode.NONE) {
 		glGetAttribLocation(program, "aPosition").toUInt()
