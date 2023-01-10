@@ -1,6 +1,6 @@
 package com.example.camera
 
-import com.example.camera.camera.Device
+import com.example.camera.device.Device
 import com.example.camera.view.FrameworkTextureView
 import platform.Foundation.NSCoder
 import platform.UIKit.UIScreen

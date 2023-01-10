@@ -7,7 +7,7 @@ import android.util.AttributeSet
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
-import com.example.camera.camera.Device
+import com.example.camera.device.Device
 import com.example.camera.gles.BYPASS_FRAGMENT_SHADER
 import com.example.camera.gles.BYPASS_VERTEX_SHADER
 import java.nio.ByteBuffer
