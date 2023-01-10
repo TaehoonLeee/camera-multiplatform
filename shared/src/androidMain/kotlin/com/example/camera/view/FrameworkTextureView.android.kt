@@ -45,10 +45,6 @@ class FrameworkTextureView(context: Context, attributeSet: AttributeSet) :
         GLES20.glGetAttribLocation(program, "aTextureCoord")
     }
 
-    private val uMVPMatrixLoc by lazy(LazyThreadSafetyMode.NONE) {
-        GLES20.glGetUniformLocation(program, "uMVPMatrix")
-    }
-
     private val uTexMatrixLoc by lazy(LazyThreadSafetyMode.NONE) {
         GLES20.glGetUniformLocation(program, "uTexMatrix")
     }
@@ -87,8 +83,6 @@ class FrameworkTextureView(context: Context, attributeSet: AttributeSet) :
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, texId)
-
-        GLES20.glUniformMatrix4fv(uMVPMatrixLoc, 1, false, IDENTITY_MATRIX, 0)
 
         cameraTexture.getTransformMatrix(texMatrix)
         GLES20.glUniformMatrix4fv(uTexMatrixLoc, 1, false, texMatrix, 0)

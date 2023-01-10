@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		E32A99F129651B3E0051763D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E32A99F029651B3E0051763D /* AppDelegate.swift */; };
-		E3D91052296564E500C786CC /* bypass.metal in Sources */ = {isa = PBXBuildFile; fileRef = E3D91051296564E500C786CC /* bypass.metal */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -29,7 +28,6 @@
 		7555FF8C242A565B00829871 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E32A99F029651B3E0051763D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E32A99F2296535F80051763D /* iosApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "iosApp-Bridging-Header.h"; sourceTree = "<group>"; };
-		E3D91051296564E500C786CC /* bypass.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = bypass.metal; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,7 +64,6 @@
 				7555FF8C242A565B00829871 /* Info.plist */,
 				E32A99F029651B3E0051763D /* AppDelegate.swift */,
 				E32A99F2296535F80051763D /* iosApp-Bridging-Header.h */,
-				E3D91051296564E500C786CC /* bypass.metal */,
 			);
 			path = iosApp;
 			sourceTree = "<group>";
@@ -169,7 +166,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E3D91052296564E500C786CC /* bypass.metal in Sources */,
 				E32A99F129651B3E0051763D /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
