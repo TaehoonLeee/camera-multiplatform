@@ -25,7 +25,7 @@ import platform.glescommon.GLenum
 import platform.glescommon.GLuint
 import platform.objc.sel_registerName
 
-class FrameworkTextureView : GLKView, AVCaptureVideoDataOutputSampleBufferDelegateProtocol, GLKViewDelegateProtocol {
+actual class FrameworkTextureView : GLKView, AVCaptureVideoDataOutputSampleBufferDelegateProtocol, GLKViewDelegateProtocol {
 
 	@OverrideInit
 	constructor(frame: CValue<CGRect>) : super(frame)

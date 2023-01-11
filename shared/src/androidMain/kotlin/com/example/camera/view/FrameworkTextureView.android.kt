@@ -14,7 +14,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.IntBuffer
 
-class FrameworkTextureView(context: Context, attributeSet: AttributeSet) :
+actual class FrameworkTextureView(context: Context, attributeSet: AttributeSet) :
     SurfaceHolder.Callback,
     SurfaceView(context, attributeSet),
     SurfaceTexture.OnFrameAvailableListener {

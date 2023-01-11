@@ -49,6 +49,10 @@ class TextureProgram(type: ProgramType) {
 	private val target: Int
 	private val handle: Int
 
+	private val aPositionLoc: Int
+	private val aTextureCoordLoc: Int
+	private val uTexMatrixLoc: Int
+
 	init {
 		when (type) {
 			ProgramType.TEXTURE_2D -> {
@@ -60,6 +64,44 @@ class TextureProgram(type: ProgramType) {
 				handle = createProgram(VERTEX_SHADER, FRAGMENT_SHADER_EXT)
 			}
 		}
+
+		aPositionLoc = glGetAttribLocation(handle, "aPosition")
+		aTextureCoordLoc = glGetAttribLocation(handle, "aTextureCoord")
+		uTexMatrixLoc = glGetAttribLocation(handle, "uTexMatrix")
+	}
+
+	fun createTextures(): Int {
+		val textures = intArrayOf(0)
+		glGenTextures(1, textures)
+
+		val texId = textures[0]
+		glBindTexture(target, texId)
+		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+		glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+		glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+
+		return texId
+	}
+
+	fun draw(
+		textureId: Int, texStride: Int, vertexStride: Int, coordsPerVertex: Int,
+		texMatrix: FloatArray, texBuffer: glFloatBuffer, vertexBuffer: glFloatBuffer
+	) {
+		glUseProgram(handle)
+
+		glActiveTexture(GL_TEXTURE0)
+		glBindTexture(target, textureId)
+
+		glUniformMatrix4fv(uTexMatrixLoc, 1, false, texMatrix, 0)
+
+		glEnableVertexAttribArray(aPositionLoc)
+		glVertexAttribPointer(aPositionLoc, coordsPerVertex, GL_FLOAT, false, vertexStride, vertexBuffer)
+
+		glEnableVertexAttribArray(aTextureCoordLoc)
+		glVertexAttribPointer(aTextureCoordLoc, coordsPerVertex, GL_FLOAT, false, texStride, texBuffer)
+
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4)
 	}
 
 	private fun createProgram(vertexShaderSource: String, fragmentShaderSource: String): Int {
