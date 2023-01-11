@@ -1,9 +1,10 @@
 package com.example.camera.view
 
-import com.example.camera.gles.BYPASS_FRAGMENT_SHADER
-import com.example.camera.gles.BYPASS_VERTEX_SHADER
+import com.example.camera.gles.*
 import com.example.camera.gles.FULL_RECT_COORDS
-import com.example.camera.gles.FULL_RECT_TEX_COORDS
+import com.example.camera.gles.api.glFloatBuffer
+import com.example.camera.gles.program.ProgramType
+import com.example.camera.gles.program.TextureProgram
 import kotlinx.cinterop.*
 import platform.AVFoundation.AVCaptureConnection
 import platform.AVFoundation.AVCaptureOutput
@@ -23,8 +24,6 @@ import platform.GLKit.GLKView
 import platform.GLKit.GLKViewDelegateProtocol
 import platform.QuartzCore.CADisplayLink
 import platform.gles3.*
-import platform.glescommon.GLenum
-import platform.glescommon.GLuint
 import platform.objc.sel_registerName
 
 actual class FrameworkTextureView : GLKView, AVCaptureVideoDataOutputSampleBufferDelegateProtocol, GLKViewDelegateProtocol {
@@ -35,16 +34,11 @@ actual class FrameworkTextureView : GLKView, AVCaptureVideoDataOutputSampleBuffe
 	@OverrideInit
 	constructor(coder: NSCoder) : super(coder)
 
-	private var program = 0u
+	private val drawable2d = Drawable2d()
+	private lateinit var texProgram: TextureProgram
+
 	private val cvTexture: CVOpenGLESTextureRefVar = nativeHeap.alloc()
 	private val textureCache: CVOpenGLESTextureCacheRefVar = nativeHeap.alloc()
-
-	private val aPositionLoc by lazy(LazyThreadSafetyMode.NONE) {
-		glGetAttribLocation(program, "aPosition").toUInt()
-	}
-	private val aTextureCoordLoc by lazy(LazyThreadSafetyMode.NONE) {
-		glGetAttribLocation(program, "aTextureCoord").toUInt()
-	}
 
 	init {
 		delegate = this
@@ -71,55 +65,35 @@ actual class FrameworkTextureView : GLKView, AVCaptureVideoDataOutputSampleBuffe
 		CVOpenGLESTextureCacheFlush(textureCache.value, 0)
 
 		CVOpenGLESTextureCacheCreateTextureFromImage(
-			allocator = kCFAllocatorDefault,
-			textureCache = textureCache.value,
-			sourceImage = imageBuffer,
-			textureAttributes = null,
-			target = GL_TEXTURE_2D,
-			internalFormat = GL_RGBA,
-			width = width.toInt(),
-			height = height.toInt(),
-			format = GL_BGRA,
-			type = GL_UNSIGNED_BYTE,
 			planeIndex = 0,
-			textureOut = cvTexture.ptr
+			format = GL_BGRA,
+			width = width.toInt(),
+			target = GL_TEXTURE_2D,
+			type = GL_UNSIGNED_BYTE,
+			height = height.toInt(),
+			textureAttributes = null,
+			internalFormat = GL_RGBA,
+			sourceImage = imageBuffer,
+			textureOut = cvTexture.ptr,
+			allocator = kCFAllocatorDefault,
+			textureCache = textureCache.value
 		)
 
-		glActiveTexture(GL_TEXTURE0)
-		glBindTexture(CVOpenGLESTextureGetTarget(cvTexture.value), CVOpenGLESTextureGetName(cvTexture.value))
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
-
-		glEnableVertexAttribArray(aPositionLoc)
-		glVertexAttribPointer(aPositionLoc, 2, GL_FLOAT, GL_FALSE.convert(), 8, FULL_RECT_COORDS.refTo(0))
-
-		glEnableVertexAttribArray(aTextureCoordLoc)
-		glVertexAttribPointer(aTextureCoordLoc, 2, GL_FLOAT, GL_FALSE.convert(), 8, FULL_RECT_TEX_COORDS.refTo(0))
+		texProgram.draw(
+			texStride = drawable2d.texCoordStride,
+			vertexStride = drawable2d.vertexStride,
+			coordsPerVertex = drawable2d.coordsPerVertex,
+			vertexBuffer = FULL_RECT_COORDS.refTo(0) as glFloatBuffer,
+			texBuffer = FULL_RECT_TEX_COORDS.refTo(0) as glFloatBuffer,
+			target = CVOpenGLESTextureGetTarget(cvTexture.value).toInt(),
+			textureId = CVOpenGLESTextureGetName(cvTexture.value).toInt()
+		)
 
 		CFRelease(cvTexture.value)
 	}
 
-	private fun createResources() = memScoped {
-		val vertexShader = createShader(GL_VERTEX_SHADER.convert(), BYPASS_VERTEX_SHADER)
-		val fragmentShader = createShader(GL_FRAGMENT_SHADER.convert(), BYPASS_FRAGMENT_SHADER)
-
-		program = glCreateProgram()
-		glAttachShader(program, vertexShader)
-		glAttachShader(program, fragmentShader)
-		glLinkProgram(program)
-
-		glUseProgram(program)
-	}
-
-	private fun MemScope.createShader(type: GLenum, source: String): GLuint {
-		val shader = glCreateShader(type)
-		glShaderSource(shader, 1, cValuesOf(source.cstr.ptr), null)
-		glCompileShader(shader)
-
-		return shader
+	private fun createResources() {
+		texProgram = TextureProgram(ProgramType.TEXTURE_2D)
 	}
 
 	@ObjCAction

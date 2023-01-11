@@ -53,6 +53,13 @@ class TextureProgram(type: ProgramType) {
 	private val aTextureCoordLoc: Int
 	private val uTexMatrixLoc: Int
 
+	private val identityMatrix = floatArrayOf(
+		1f, 0f, 0f, 0f,
+		0f, 1f, 0f, 0f,
+		0f, 0f, 1f, 0f,
+		0f, 0f, 0f, 1f
+	)
+
 	init {
 		when (type) {
 			ProgramType.TEXTURE_2D -> {
@@ -85,8 +92,9 @@ class TextureProgram(type: ProgramType) {
 	}
 
 	fun draw(
-		textureId: Int, texStride: Int, vertexStride: Int, coordsPerVertex: Int,
-		texMatrix: FloatArray, texBuffer: glFloatBuffer, vertexBuffer: glFloatBuffer
+		textureId: Int, texStride: Int, vertexStride: Int,
+		coordsPerVertex: Int, texBuffer: glFloatBuffer, vertexBuffer: glFloatBuffer,
+		target: Int = this.target, texMatrix: FloatArray = identityMatrix
 	) {
 		glUseProgram(handle)
 
