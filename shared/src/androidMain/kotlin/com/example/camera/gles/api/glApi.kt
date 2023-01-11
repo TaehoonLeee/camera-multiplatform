@@ -34,6 +34,7 @@ actual fun glShaderSource(shader: Int, source: String) = GLES20.glShaderSource(s
 actual fun glCompileShader(shader: Int) = GLES20.glCompileShader(shader)
 
 actual fun glGetAttribLocation(program: Int, name: String) = GLES20.glGetAttribLocation(program, name)
+actual fun glGetUniformLocation(program: Int, name: String) = GLES20.glGetUniformLocation(program, name)
 
 actual fun glActiveTexture(texture: Int) = GLES20.glActiveTexture(texture)
 actual fun glGenTextures(n: Int, textures: IntArray) = GLES20.glGenTextures(n ,textures, 0)

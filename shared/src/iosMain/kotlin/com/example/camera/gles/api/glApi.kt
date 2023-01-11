@@ -36,6 +36,7 @@ actual fun glShaderSource(shader: Int, source: String) = memScoped {
 actual fun glCompileShader(shader: Int) = platform.gles3.glCompileShader(shader.toUInt())
 
 actual fun glGetAttribLocation(program: Int, name: String) = platform.gles3.glGetAttribLocation(program.toUInt(), name)
+actual fun glGetUniformLocation(program: Int, name: String) = platform.gles3.glGetUniformLocation(program.toUInt(), name)
 
 actual fun glActiveTexture(texture: Int) = platform.gles3.glActiveTexture(texture.toUInt())
 actual fun glGenTextures(n: Int, textures: IntArray) = platform.gles3.glGenTextures(n, textures.toUIntArray().refTo(0))

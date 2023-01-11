@@ -2,6 +2,8 @@ package com.example.camera.view
 
 import com.example.camera.gles.BYPASS_FRAGMENT_SHADER
 import com.example.camera.gles.BYPASS_VERTEX_SHADER
+import com.example.camera.gles.FULL_RECT_COORDS
+import com.example.camera.gles.FULL_RECT_TEX_COORDS
 import kotlinx.cinterop.*
 import platform.AVFoundation.AVCaptureConnection
 import platform.AVFoundation.AVCaptureOutput

@@ -67,7 +67,7 @@ class TextureProgram(type: ProgramType) {
 
 		aPositionLoc = glGetAttribLocation(handle, "aPosition")
 		aTextureCoordLoc = glGetAttribLocation(handle, "aTextureCoord")
-		uTexMatrixLoc = glGetAttribLocation(handle, "uTexMatrix")
+		uTexMatrixLoc = glGetUniformLocation(handle, "uTexMatrix")
 	}
 
 	fun createTextures(): Int {

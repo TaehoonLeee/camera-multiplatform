@@ -30,6 +30,7 @@ expect fun glShaderSource(shader: Int, source: String)
 expect fun glCompileShader(shader: Int)
 
 expect fun glGetAttribLocation(program: Int, name: String): Int
+expect fun glGetUniformLocation(program: Int, name: String): Int
 
 expect fun glActiveTexture(texture: Int)
 expect fun glGenTextures(n: Int, textures: IntArray)
