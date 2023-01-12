@@ -16,6 +16,6 @@ Multiplatform camera rendering in Android, iOS by using OpenGL ES
 
 ## Features
 - [x] Camera Preview in Android, iOS
-- [ ] Commonize Rendering Code
+- [x] Commonize Rendering Code
 - [ ] Filtering Camera Preview
 - [ ] Recording Camera
