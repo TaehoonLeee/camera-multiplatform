@@ -7,51 +7,45 @@ import android.util.AttributeSet
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
-import com.example.camera.camera.Device
-import com.example.camera.gles.BYPASS_FRAGMENT_SHADER
-import com.example.camera.gles.BYPASS_VERTEX_SHADER
+import com.example.camera.device.Device
+import com.example.camera.gles.Drawable2d
+import com.example.camera.gles.FULL_RECT_COORDS
+import com.example.camera.gles.FULL_RECT_TEX_COORDS
+import com.example.camera.gles.program.ProgramType
+import com.example.camera.gles.program.TextureProgram
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.nio.IntBuffer
 
-class FrameworkTextureView(context: Context, attributeSet: AttributeSet) :
+actual class FrameworkTextureView(context: Context, attributeSet: AttributeSet) :
     SurfaceHolder.Callback,
     SurfaceView(context, attributeSet),
     SurfaceTexture.OnFrameAvailableListener {
 
-    private val FULL_RECT_BUF = run {
-        val nativeBuffer = ByteBuffer.allocateDirect(32)
-        nativeBuffer.order(ByteOrder.nativeOrder())
-        nativeBuffer.asFloatBuffer().also {
-            it.put(FULL_RECT_COORDS)
-            it.position(0)
+    private companion object {
+        private val FULL_RECT_BUF = run {
+            val nativeBuffer = ByteBuffer.allocateDirect(32)
+            nativeBuffer.order(ByteOrder.nativeOrder())
+            nativeBuffer.asFloatBuffer().also {
+                it.put(FULL_RECT_COORDS)
+                it.position(0)
+            }
         }
-    }
 
-    private val FULL_RECT_TEX_BUF = run {
-        val nativeBuffer = ByteBuffer.allocateDirect(32)
-        nativeBuffer.order(ByteOrder.nativeOrder())
-        nativeBuffer.asFloatBuffer().also {
-            it.put(FULL_RECT_TEX_COORDS)
-            it.position(0)
+        private val FULL_RECT_TEX_BUF = run {
+            val nativeBuffer = ByteBuffer.allocateDirect(32)
+            nativeBuffer.order(ByteOrder.nativeOrder())
+            nativeBuffer.asFloatBuffer().also {
+                it.put(FULL_RECT_TEX_COORDS)
+                it.position(0)
+            }
         }
-    }
-
-    private val aPositionLoc by lazy(LazyThreadSafetyMode.NONE) {
-        GLES20.glGetAttribLocation(program, "aPosition")
-    }
-
-    private val aTextureCoordLoc by lazy(LazyThreadSafetyMode.NONE) {
-        GLES20.glGetAttribLocation(program, "aTextureCoord")
-    }
-
-    private val uTexMatrixLoc by lazy(LazyThreadSafetyMode.NONE) {
-        GLES20.glGetUniformLocation(program, "uTexMatrix")
     }
 
     private var texId: Int = -1
-    private var program: Int = -1
+    private val drawable2d = Drawable2d()
     private val texMatrix = FloatArray(16)
+
+    private lateinit var texProgram: TextureProgram
 
     private lateinit var eglConfig: EGLConfig
     private lateinit var eglContext: EGLContext
@@ -79,21 +73,16 @@ class FrameworkTextureView(context: Context, attributeSet: AttributeSet) :
     override fun onFrameAvailable(p0: SurfaceTexture?) {
         cameraTexture.updateTexImage()
 
-        GLES20.glUseProgram(program)
-
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
-        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, texId)
-
         cameraTexture.getTransformMatrix(texMatrix)
-        GLES20.glUniformMatrix4fv(uTexMatrixLoc, 1, false, texMatrix, 0)
-
-        GLES20.glEnableVertexAttribArray(aPositionLoc)
-        GLES20.glVertexAttribPointer(aPositionLoc, 2, GLES20.GL_FLOAT, false, 8, FULL_RECT_BUF)
-
-        GLES20.glEnableVertexAttribArray(aTextureCoordLoc)
-        GLES20.glVertexAttribPointer(aTextureCoordLoc, 2, GLES20.GL_FLOAT, false, 8, FULL_RECT_TEX_BUF)
-
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
+        texProgram.draw(
+            textureId = texId,
+            texMatrix = texMatrix,
+            coordsPerVertex = drawable2d.coordsPerVertex,
+            vertexStride = drawable2d.vertexStride,
+            vertexBuffer = FULL_RECT_BUF,
+            texStride = drawable2d.texCoordStride,
+            texBuffer = FULL_RECT_TEX_BUF,
+        )
         EGL14.eglSwapBuffers(eglDisplay, eglSurface)
     }
 
@@ -128,31 +117,9 @@ class FrameworkTextureView(context: Context, attributeSet: AttributeSet) :
         EGL14.eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext)
     }
 
-    private fun createShader(type: Int, source: String): Int {
-        val shader = GLES20.glCreateShader(type)
-        GLES20.glShaderSource(shader, source)
-        GLES20.glCompileShader(shader)
-
-        return shader
-    }
-
     private fun createResources() {
-        val vertexShader = createShader(GLES20.GL_VERTEX_SHADER, BYPASS_VERTEX_SHADER)
-        val fragmentShader = createShader(GLES20.GL_FRAGMENT_SHADER, BYPASS_FRAGMENT_SHADER)
-        program = GLES20.glCreateProgram()
-        GLES20.glAttachShader(program, vertexShader)
-        GLES20.glAttachShader(program, fragmentShader)
-        GLES20.glLinkProgram(program)
-
-        val buf = IntBuffer.allocate(1)
-        GLES20.glGenBuffers(1, buf)
-
-        texId = buf[0]
-        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, texId)
-        GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST)
-        GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR)
-        GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE)
-        GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE)
+        texProgram = TextureProgram(ProgramType.TEXTURE_EXT)
+        texId = texProgram.createTextures()
 
         cameraTexture = SurfaceTexture(texId)
         cameraTexture.setOnFrameAvailableListener(this)

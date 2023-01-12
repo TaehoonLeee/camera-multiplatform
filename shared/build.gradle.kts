@@ -1,7 +1,6 @@
 plugins {
     kotlin("multiplatform")
     id("com.android.library")
-    id("org.jetbrains.compose")
 }
 
 kotlin {
@@ -19,16 +18,8 @@ kotlin {
     }
 
     sourceSets {
-        val commonMain by getting {
-            dependencies {
-                implementation(compose.foundation)
-            }
-        }
-        getByName("androidMain").dependencies {
-            implementation(compose.foundation)
-        }
         create("iosMain") {
-            dependsOn(commonMain)
+            dependsOn(commonMain.get())
             getByName("iosX64Main").dependsOn(this)
             getByName("iosArm64Main").dependsOn(this)
             getByName("iosSimulatorArm64Main").dependsOn(this)

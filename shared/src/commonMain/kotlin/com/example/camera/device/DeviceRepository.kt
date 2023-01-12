@@ -1,4 +1,4 @@
-package com.example.camera.camera
+package com.example.camera.device
 
 internal expect class DeviceRepository() {
     fun getCamera(): Device

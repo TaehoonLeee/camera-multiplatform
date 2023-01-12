@@ -1,4 +1,4 @@
-package com.example.camera.camera
+package com.example.camera.device
 
 import android.content.Context
 import android.hardware.camera2.CameraCaptureSession
