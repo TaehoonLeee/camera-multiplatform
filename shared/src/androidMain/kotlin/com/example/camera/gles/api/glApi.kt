@@ -3,7 +3,9 @@ package com.example.camera.gles.api
 import android.opengl.GLES11Ext
 import android.opengl.GLES20
 import java.nio.FloatBuffer
+import java.nio.IntBuffer
 
+actual typealias glIntBuffer = IntBuffer
 actual typealias glFloatBuffer = FloatBuffer
 
 actual val GL_FLOAT = GLES20.GL_FLOAT
@@ -23,6 +25,9 @@ actual val GL_TEXTURE_WRAP_S = GLES20.GL_TEXTURE_WRAP_S
 actual val GL_TEXTURE_WRAP_T = GLES20.GL_TEXTURE_WRAP_T
 actual val GL_TEXTURE_MIN_FILTER = GLES20.GL_TEXTURE_MIN_FILTER
 actual val GL_TEXTURE_MAG_FILTER = GLES20.GL_TEXTURE_MAG_FILTER
+
+actual val GL_LINK_STATUS = GLES20.GL_COMPILE_STATUS
+actual val GL_COMPILE_STATUS = GLES20.GL_COMPILE_STATUS
 
 actual fun glCreateProgram() = GLES20.glCreateProgram()
 actual fun glAttachShader(program: Int, shader: Int) = GLES20.glAttachShader(program, shader)
@@ -45,3 +50,10 @@ actual fun glUniformMatrix4fv(location: Int, count: Int, transpose: Boolean, val
 actual fun glEnableVertexAttribArray(location: Int) = GLES20.glEnableVertexAttribArray(location)
 actual fun glVertexAttribPointer(location: Int, size: Int, type: Int, normalized: Boolean, stride: Int, value: glFloatBuffer) = GLES20.glVertexAttribPointer(location, size, type, normalized, stride, value)
 actual fun glDrawArrays(mode: Int, first: Int, count: Int) = GLES20.glDrawArrays(mode, first, count)
+
+actual fun glGetProgramiv(program: Int, pname: Int, params: glIntBuffer) = GLES20.glGetProgramiv(program, pname, params)
+actual fun glGetProgramInfoLog(program: Int) = GLES20.glGetProgramInfoLog(program)
+actual fun glGetShaderiv(shader: Int, pname: Int, params: glIntBuffer) = GLES20.glGetShaderiv(shader, pname, params)
+actual fun glGetShaderInfoLog(shader: Int) = GLES20.glGetShaderInfoLog(shader)
+
+actual fun glGetError() = GLES20.glGetError()

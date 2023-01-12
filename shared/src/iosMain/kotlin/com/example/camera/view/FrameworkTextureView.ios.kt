@@ -83,8 +83,8 @@ actual class FrameworkTextureView : GLKView, AVCaptureVideoDataOutputSampleBuffe
 			texStride = drawable2d.texCoordStride,
 			vertexStride = drawable2d.vertexStride,
 			coordsPerVertex = drawable2d.coordsPerVertex,
-			vertexBuffer = FULL_RECT_COORDS.refTo(0) as glFloatBuffer,
-			texBuffer = FULL_RECT_TEX_COORDS.refTo(0) as glFloatBuffer,
+			vertexBuffer = FULL_RECT_COORDS.refTo(0),
+			texBuffer = FULL_RECT_TEX_COORDS.refTo(0),
 			target = CVOpenGLESTextureGetTarget(cvTexture.value).toInt(),
 			textureId = CVOpenGLESTextureGetName(cvTexture.value).toInt()
 		)
