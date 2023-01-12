@@ -6,6 +6,9 @@ import platform.gles3.GL_TRUE
 import platform.glescommon.GLcharVar
 
 @Suppress("ACTUAL_WITHOUT_EXPECT", "ACTUAL_TYPE_ALIAS_WITH_COMPLEX_SUBSTITUTION")
+actual typealias glBuffer = CValuesRef<ByteVar>
+
+@Suppress("ACTUAL_WITHOUT_EXPECT", "ACTUAL_TYPE_ALIAS_WITH_COMPLEX_SUBSTITUTION")
 actual typealias glFloatBuffer = CValuesRef<FloatVar>
 
 @Suppress("ACTUAL_WITHOUT_EXPECT", "ACTUAL_TYPE_ALIAS_WITH_COMPLEX_SUBSTITUTION")
@@ -61,6 +64,8 @@ actual fun glVertexAttribPointer(location: Int, size: Int, type: Int, normalized
 	platform.gles3.glVertexAttribPointer(location.convert(), size, type.convert(), nativeNormalized.convert(), stride, value)
 }
 actual fun glDrawArrays(mode: Int, first: Int, count: Int) = platform.gles3.glDrawArrays(mode.convert(), first, count)
+
+actual fun glTexImage2D(target: Int, width: Int, height: Int, pixels: glBuffer?) = platform.gles3.glTexImage2D(target.convert(), 0, -1, width, height, 0, 0, 0, pixels)
 
 actual fun glGetProgramiv(program: Int, pname: Int, params: glIntBuffer) = platform.gles3.glGetProgramiv(program.convert(), pname.convert(), params)
 actual fun glGetProgramInfoLog(program: Int): String = memScoped {

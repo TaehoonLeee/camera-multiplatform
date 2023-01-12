@@ -6,7 +6,7 @@ import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
 import android.view.Surface
 
-actual class Device(context: Context) {
+class Device(context: Context) {
 
     private val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
 

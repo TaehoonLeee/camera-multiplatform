@@ -1,6 +1,9 @@
 package com.example.camera.gles.api
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
+expect abstract class glBuffer
+
+@Suppress("NO_ACTUAL_FOR_EXPECT")
 expect abstract class glIntBuffer
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
@@ -48,6 +51,8 @@ expect fun glUniformMatrix4fv(location: Int, count: Int, transpose: Boolean, val
 expect fun glEnableVertexAttribArray(location: Int)
 expect fun glVertexAttribPointer(location: Int, size: Int, type: Int, normalized: Boolean, stride: Int, value: glFloatBuffer)
 expect fun glDrawArrays(mode: Int, first: Int, count: Int)
+
+expect fun glTexImage2D(target: Int, width: Int, height: Int, pixels: glBuffer?)
 
 expect fun glGetProgramiv(program: Int, pname: Int, params: glIntBuffer)
 expect fun glGetProgramInfoLog(program: Int): String

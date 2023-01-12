@@ -2,9 +2,11 @@ package com.example.camera.gles.api
 
 import android.opengl.GLES11Ext
 import android.opengl.GLES20
+import java.nio.Buffer
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 
+actual typealias glBuffer = Buffer
 actual typealias glIntBuffer = IntBuffer
 actual typealias glFloatBuffer = FloatBuffer
 
@@ -50,6 +52,8 @@ actual fun glUniformMatrix4fv(location: Int, count: Int, transpose: Boolean, val
 actual fun glEnableVertexAttribArray(location: Int) = GLES20.glEnableVertexAttribArray(location)
 actual fun glVertexAttribPointer(location: Int, size: Int, type: Int, normalized: Boolean, stride: Int, value: glFloatBuffer) = GLES20.glVertexAttribPointer(location, size, type, normalized, stride, value)
 actual fun glDrawArrays(mode: Int, first: Int, count: Int) = GLES20.glDrawArrays(mode, first, count)
+
+actual fun glTexImage2D(target: Int, width: Int, height: Int, pixels: glBuffer?) = GLES20.glTexImage2D(target, 0, -1, width, height, 0, 0, 0, pixels)
 
 actual fun glGetProgramiv(program: Int, pname: Int, params: glIntBuffer) = GLES20.glGetProgramiv(program, pname, params)
 actual fun glGetProgramInfoLog(program: Int) = GLES20.glGetProgramInfoLog(program)

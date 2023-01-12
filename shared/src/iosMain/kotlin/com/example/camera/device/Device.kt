@@ -6,7 +6,7 @@ import platform.CoreVideo.kCVPixelFormatType_32BGRA
 import platform.Foundation.CFBridgingRelease
 import platform.darwin.dispatch_get_main_queue
 
-actual class Device {
+class Device {
 
     private val captureSession = AVCaptureSession()
     private val graphics = AVCaptureVideoDataOutput()

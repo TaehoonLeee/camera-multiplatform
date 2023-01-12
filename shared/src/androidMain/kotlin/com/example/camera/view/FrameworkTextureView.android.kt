@@ -13,10 +13,11 @@ import com.example.camera.gles.FULL_RECT_COORDS
 import com.example.camera.gles.FULL_RECT_TEX_COORDS
 import com.example.camera.gles.program.ProgramType
 import com.example.camera.gles.program.TextureProgram
+import com.example.camera.resources.imageResources
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-actual class FrameworkTextureView(context: Context, attributeSet: AttributeSet) :
+class FrameworkTextureView(context: Context, attributeSet: AttributeSet) :
     SurfaceHolder.Callback,
     SurfaceView(context, attributeSet),
     SurfaceTexture.OnFrameAvailableListener {
@@ -62,6 +63,9 @@ actual class FrameworkTextureView(context: Context, attributeSet: AttributeSet) 
     override fun surfaceCreated(holder: SurfaceHolder) {
         initEGL()
         createResources()
+        imageResources("sample_clut.png").also {
+            println(it.toList())
+        }
 
         val device = Device(context)
         device.open(cameraSurface)

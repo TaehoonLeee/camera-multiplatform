@@ -26,7 +26,7 @@ import platform.QuartzCore.CADisplayLink
 import platform.gles3.*
 import platform.objc.sel_registerName
 
-actual class FrameworkTextureView : GLKView, AVCaptureVideoDataOutputSampleBufferDelegateProtocol {
+class FrameworkTextureView : GLKView, AVCaptureVideoDataOutputSampleBufferDelegateProtocol {
 
 	@OverrideInit
 	constructor(frame: CValue<CGRect>) : super(frame)

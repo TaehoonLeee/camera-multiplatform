@@ -1,6 +1,7 @@
 package com.example.camera
 
 import com.example.camera.device.Device
+import com.example.camera.resources.imageResources
 import com.example.camera.view.FrameworkTextureView
 import platform.Foundation.NSCoder
 import platform.UIKit.UIScreen
@@ -22,6 +23,9 @@ class PreviewController : UIViewController {
 
 		val textureView = FrameworkTextureView(UIScreen.mainScreen.bounds)
 		view.addSubview(textureView)
+		imageResources("sample_clut.png").also {
+			println(it.toList())
+		}
 		Device().setOutput(textureView)
 	}
 }
