@@ -26,7 +26,7 @@ import platform.QuartzCore.CADisplayLink
 import platform.gles3.*
 import platform.objc.sel_registerName
 
-actual class FrameworkTextureView : GLKView, AVCaptureVideoDataOutputSampleBufferDelegateProtocol, GLKViewDelegateProtocol {
+actual class FrameworkTextureView : GLKView, AVCaptureVideoDataOutputSampleBufferDelegateProtocol {
 
 	@OverrideInit
 	constructor(frame: CValue<CGRect>) : super(frame)
@@ -41,7 +41,6 @@ actual class FrameworkTextureView : GLKView, AVCaptureVideoDataOutputSampleBuffe
 	private val textureCache: CVOpenGLESTextureCacheRefVar = nativeHeap.alloc()
 
 	init {
-		delegate = this
 		enableSetNeedsDisplay = false
 		context = EAGLContext(kEAGLRenderingAPIOpenGLES3)
 
@@ -52,10 +51,6 @@ actual class FrameworkTextureView : GLKView, AVCaptureVideoDataOutputSampleBuffe
 
 		val displayLink = CADisplayLink.displayLinkWithTarget(this, sel_registerName("render"))
 		displayLink.addToRunLoop(NSRunLoop.currentRunLoop, NSDefaultRunLoopMode)
-	}
-
-	override fun glkView(view: GLKView, drawInRect: CValue<CGRect>) {
-		glDrawArrays(GL_TRIANGLE_STRIP.convert(), 0, 4)
 	}
 
 	override fun captureOutput(output: AVCaptureOutput, didOutputSampleBuffer: CMSampleBufferRef?, fromConnection: AVCaptureConnection) {
