@@ -13,6 +13,7 @@ expect val GL_FLOAT: Int
 expect val GL_TRIANGLE_STRIP: Int
 
 expect val GL_TEXTURE0: Int
+expect val GL_TEXTURE1: Int
 expect val GL_TEXTURE_2D: Int
 expect val GL_TEXTURE_EXT: Int
 
@@ -42,6 +43,8 @@ expect fun glCompileShader(shader: Int)
 expect fun glGetAttribLocation(program: Int, name: String): Int
 expect fun glGetUniformLocation(program: Int, name: String): Int
 
+expect fun glUniform1i(location: Int, x: Int)
+
 expect fun glActiveTexture(texture: Int)
 expect fun glGenTextures(n: Int, textures: IntArray)
 expect fun glBindTexture(target: Int, texture: Int)
@@ -60,3 +63,5 @@ expect fun glGetShaderiv(shader: Int, pname: Int, params: glIntBuffer)
 expect fun glGetShaderInfoLog(shader: Int): String
 
 expect fun glGetError(): Int
+
+expect fun ByteArray.toGlBuffer(): glBuffer

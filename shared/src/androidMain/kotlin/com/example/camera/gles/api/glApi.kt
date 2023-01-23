@@ -2,9 +2,7 @@ package com.example.camera.gles.api
 
 import android.opengl.GLES11Ext
 import android.opengl.GLES20
-import java.nio.Buffer
-import java.nio.FloatBuffer
-import java.nio.IntBuffer
+import java.nio.*
 
 actual typealias glBuffer = Buffer
 actual typealias glIntBuffer = IntBuffer
@@ -14,6 +12,7 @@ actual val GL_FLOAT = GLES20.GL_FLOAT
 actual val GL_TRIANGLE_STRIP = GLES20.GL_TRIANGLE_STRIP
 
 actual val GL_TEXTURE0 = GLES20.GL_TEXTURE0
+actual val GL_TEXTURE1 = GLES20.GL_TEXTURE1
 actual val GL_TEXTURE_2D = GLES20.GL_TEXTURE_2D
 actual val GL_TEXTURE_EXT = GLES11Ext.GL_TEXTURE_EXTERNAL_OES
 
@@ -43,6 +42,8 @@ actual fun glCompileShader(shader: Int) = GLES20.glCompileShader(shader)
 actual fun glGetAttribLocation(program: Int, name: String) = GLES20.glGetAttribLocation(program, name)
 actual fun glGetUniformLocation(program: Int, name: String) = GLES20.glGetUniformLocation(program, name)
 
+actual fun glUniform1i(location: Int, x: Int) = GLES20.glUniform1i(location, x)
+
 actual fun glActiveTexture(texture: Int) = GLES20.glActiveTexture(texture)
 actual fun glGenTextures(n: Int, textures: IntArray) = GLES20.glGenTextures(n ,textures, 0)
 actual fun glBindTexture(target: Int, texture: Int) = GLES20.glBindTexture(target, texture)
@@ -61,3 +62,5 @@ actual fun glGetShaderiv(shader: Int, pname: Int, params: glIntBuffer) = GLES20.
 actual fun glGetShaderInfoLog(shader: Int) = GLES20.glGetShaderInfoLog(shader)
 
 actual fun glGetError() = GLES20.glGetError()
+
+actual fun ByteArray.toGlBuffer(): glBuffer = ByteBuffer.wrap(this)

@@ -18,6 +18,7 @@ actual val GL_FLOAT = platform.gles3.GL_FLOAT
 actual val GL_TRIANGLE_STRIP = platform.gles3.GL_TRIANGLE_STRIP
 
 actual val GL_TEXTURE0 = platform.gles3.GL_TEXTURE0
+actual val GL_TEXTURE1 = platform.gles3.GL_TEXTURE1
 actual val GL_TEXTURE_2D = platform.gles3.GL_TEXTURE_2D
 actual val GL_TEXTURE_EXT = 0
 
@@ -48,6 +49,8 @@ actual fun glCompileShader(shader: Int) = platform.gles3.glCompileShader(shader.
 
 actual fun glGetAttribLocation(program: Int, name: String) = platform.gles3.glGetAttribLocation(program.convert(), name)
 actual fun glGetUniformLocation(program: Int, name: String) = platform.gles3.glGetUniformLocation(program.convert(), name)
+
+actual fun glUniform1i(location: Int, x: Int) = platform.gles3.glUniform1i(location, x)
 
 actual fun glActiveTexture(texture: Int) = platform.gles3.glActiveTexture(texture.convert())
 actual fun glGenTextures(n: Int, textures: IntArray) = platform.gles3.glGenTextures(n, textures.toUIntArray().refTo(0))
@@ -84,3 +87,5 @@ actual fun glGetShaderInfoLog(shader: Int): String = memScoped {
 }
 
 actual fun glGetError(): Int = platform.gles3.glGetError().toInt()
+
+actual fun ByteArray.toGlBuffer(): glBuffer = refTo(0)
