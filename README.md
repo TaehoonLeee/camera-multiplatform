@@ -1,6 +1,6 @@
 # camera-multiplatform
 
-Inspired by [Grafika](https://github.com/google/grafika), [Camera2 Sample](https://github.com/android/camera-samples/tree/main/Camera2Video), [Kotlinconf-Spinner](https://github.com/Kotlin/kotlinconf-spinner)
+Inspired by [Grafika](https://github.com/google/grafika), [Camera2 Sample](https://github.com/android/camera-samples/tree/main/Camera2Video), [Kotlinconf-Spinner](https://github.com/Kotlin/kotlinconf-spinner), [Filtered Shader](https://github.com/mattdesl/glsl-lut/blob/master/example/index.js)
 
 Multiplatform camera rendering in Android, iOS by using OpenGL ES
 
