@@ -13,7 +13,6 @@ import com.example.camera.gles.FULL_RECT_COORDS
 import com.example.camera.gles.FULL_RECT_TEX_COORDS
 import com.example.camera.gles.program.ProgramType
 import com.example.camera.gles.program.TextureProgram
-import com.example.camera.resources.imageResources
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -24,21 +23,23 @@ class FrameworkTextureView(context: Context, attributeSet: AttributeSet) :
 
     private companion object {
         private val FULL_RECT_BUF = run {
-            val nativeBuffer = ByteBuffer.allocateDirect(32)
-            nativeBuffer.order(ByteOrder.nativeOrder())
-            nativeBuffer.asFloatBuffer().also {
-                it.put(FULL_RECT_COORDS)
-                it.position(0)
-            }
+            ByteBuffer.allocateDirect(FULL_RECT_COORDS.size * Float.SIZE_BYTES)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer()
+                .also {
+                    it.put(FULL_RECT_COORDS)
+                    it.position(0)
+                }
         }
 
         private val FULL_RECT_TEX_BUF = run {
-            val nativeBuffer = ByteBuffer.allocateDirect(32)
-            nativeBuffer.order(ByteOrder.nativeOrder())
-            nativeBuffer.asFloatBuffer().also {
-                it.put(FULL_RECT_TEX_COORDS)
-                it.position(0)
-            }
+            ByteBuffer.allocateDirect(FULL_RECT_TEX_COORDS.size * Float.SIZE_BYTES)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer()
+                .also {
+                    it.put(FULL_RECT_TEX_COORDS)
+                    it.position(0)
+                }
         }
     }
 
