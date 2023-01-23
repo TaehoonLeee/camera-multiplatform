@@ -63,9 +63,6 @@ class FrameworkTextureView(context: Context, attributeSet: AttributeSet) :
     override fun surfaceCreated(holder: SurfaceHolder) {
         initEGL()
         createResources()
-        imageResources("sample_clut.png").also {
-            println(it.toList())
-        }
 
         val device = Device(context)
         device.open(cameraSurface)
