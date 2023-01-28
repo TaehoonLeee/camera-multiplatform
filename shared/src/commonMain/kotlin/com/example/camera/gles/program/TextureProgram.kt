@@ -138,7 +138,7 @@ class TextureProgram(type: ProgramType) {
 		glGenTextures(1, textures)
 
 		val texId = textures[0]
-		glBindTexture(target, texId)
+		glBindTexture(GL_TEXTURE_2D, texId)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
 
