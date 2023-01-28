@@ -1,7 +1,11 @@
+@file:Suppress("UNUSED")
+
 package com.example.camera.gles.api
 
+import android.graphics.BitmapFactory
 import android.opengl.GLES11Ext
 import android.opengl.GLES20
+import android.opengl.GLUtils
 import java.nio.*
 
 actual typealias glBuffer = Buffer
@@ -54,7 +58,11 @@ actual fun glEnableVertexAttribArray(location: Int) = GLES20.glEnableVertexAttri
 actual fun glVertexAttribPointer(location: Int, size: Int, type: Int, normalized: Boolean, stride: Int, value: glFloatBuffer) = GLES20.glVertexAttribPointer(location, size, type, normalized, stride, value)
 actual fun glDrawArrays(mode: Int, first: Int, count: Int) = GLES20.glDrawArrays(mode, first, count)
 
-actual fun glTexImage2D(target: Int, width: Int, height: Int, pixels: glBuffer?) = GLES20.glTexImage2D(target, 0, -1, width, height, 0, 0, 0, pixels)
+actual fun glTexImage2D(target: Int, width: Int, height: Int, pixels: ByteArray?) {
+    val bitmap = pixels?.let { BitmapFactory.decodeByteArray(pixels, 0, pixels.size) }
+    GLUtils.texImage2D(GL_TEXTURE_2D, 0, bitmap, 0)
+    bitmap?.recycle()
+}
 
 actual fun glGetProgramiv(program: Int, pname: Int, params: glIntBuffer) = GLES20.glGetProgramiv(program, pname, params)
 actual fun glGetProgramInfoLog(program: Int) = GLES20.glGetProgramInfoLog(program)
@@ -62,5 +70,3 @@ actual fun glGetShaderiv(shader: Int, pname: Int, params: glIntBuffer) = GLES20.
 actual fun glGetShaderInfoLog(shader: Int) = GLES20.glGetShaderInfoLog(shader)
 
 actual fun glGetError() = GLES20.glGetError()
-
-actual fun ByteArray.toGlBuffer(): glBuffer = ByteBuffer.wrap(this)

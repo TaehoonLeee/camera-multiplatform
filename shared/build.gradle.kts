@@ -18,6 +18,9 @@ kotlin {
     }
 
     sourceSets {
+        all {
+            languageSettings.optIn("kotlin.ExperimentalUnsignedTypes")
+        }
         create("iosMain") {
             dependsOn(commonMain.get())
             getByName("iosX64Main").dependsOn(this)
@@ -29,10 +32,10 @@ kotlin {
 
 android {
     namespace = "com.example.camera"
-    compileSdk = 32
+    compileSdk = 33
     defaultConfig {
         minSdk = 21
-        targetSdk = 32
+        targetSdk = 33
     }
     sourceSets["main"].res.srcDir("src/commonMain/resources")
 }

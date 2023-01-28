@@ -55,7 +55,7 @@ expect fun glEnableVertexAttribArray(location: Int)
 expect fun glVertexAttribPointer(location: Int, size: Int, type: Int, normalized: Boolean, stride: Int, value: glFloatBuffer)
 expect fun glDrawArrays(mode: Int, first: Int, count: Int)
 
-expect fun glTexImage2D(target: Int, width: Int, height: Int, pixels: glBuffer?)
+expect fun glTexImage2D(target: Int, width: Int, height: Int, pixels: ByteArray?)
 
 expect fun glGetProgramiv(program: Int, pname: Int, params: glIntBuffer)
 expect fun glGetProgramInfoLog(program: Int): String
@@ -63,5 +63,3 @@ expect fun glGetShaderiv(shader: Int, pname: Int, params: glIntBuffer)
 expect fun glGetShaderInfoLog(shader: Int): String
 
 expect fun glGetError(): Int
-
-expect fun ByteArray.toGlBuffer(): glBuffer

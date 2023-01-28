@@ -116,7 +116,7 @@ class TextureProgram(type: ProgramType) {
 
 		uLutLoc = glGetUniformLocation(handle, "uLut")
 		lookupTableLoc = glGetUniformLocation(handle, "lookupTable")
-		lookupTable = createImageTextures(imageResources("sample_clut.png").toGlBuffer(), 512, 512)
+		lookupTable = createImageTextures(imageResources("sample_clut.png"), 512, 512)
 	}
 
 	fun createTextures(): Int {
@@ -133,7 +133,7 @@ class TextureProgram(type: ProgramType) {
 		return texId
 	}
 
-	fun createImageTextures(data: glBuffer, width: Int, height: Int): Int {
+	fun createImageTextures(data: ByteArray, width: Int, height: Int): Int {
 		val textures = intArrayOf(0)
 		glGenTextures(1, textures)
 
@@ -165,7 +165,7 @@ class TextureProgram(type: ProgramType) {
 		glEnableVertexAttribArray(aTextureCoordLoc)
 		glVertexAttribPointer(aTextureCoordLoc, coordsPerVertex, GL_FLOAT, false, texStride, texBuffer)
 
-		glUniform1i(uLutLoc, 0)
+		glUniform1i(uLutLoc, 1)
 		glActiveTexture(GL_TEXTURE1)
 		glBindTexture(GL_TEXTURE_2D, lookupTable)
 		glUniform1i(lookupTableLoc, 1)

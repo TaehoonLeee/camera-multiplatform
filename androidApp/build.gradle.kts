@@ -5,11 +5,11 @@ plugins {
 
 android {
     namespace = "com.example.camera.android"
-    compileSdk = 32
+    compileSdk = 33
     defaultConfig {
         applicationId = "com.example.camera.android"
         minSdk = 24
-        targetSdk = 32
+        targetSdk = 33
         versionCode = 1
         versionName = "1.0"
     }
@@ -22,4 +22,5 @@ android {
 
 dependencies {
     implementation(project(":shared"))
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
 }

@@ -1,9 +1,10 @@
+@file:Suppress("UNUSED")
+
 package com.example.camera.gles.api
 
 import kotlinx.cinterop.*
 import platform.gles3.GL_FALSE
 import platform.gles3.GL_TRUE
-import platform.glescommon.GLcharVar
 
 @Suppress("ACTUAL_WITHOUT_EXPECT", "ACTUAL_TYPE_ALIAS_WITH_COMPLEX_SUBSTITUTION")
 actual typealias glBuffer = CValuesRef<ByteVar>
@@ -68,7 +69,9 @@ actual fun glVertexAttribPointer(location: Int, size: Int, type: Int, normalized
 }
 actual fun glDrawArrays(mode: Int, first: Int, count: Int) = platform.gles3.glDrawArrays(mode.convert(), first, count)
 
-actual fun glTexImage2D(target: Int, width: Int, height: Int, pixels: glBuffer?) = platform.gles3.glTexImage2D(target.convert(), 0, -1, width, height, 0, 0, 0, pixels)
+actual fun glTexImage2D(target: Int, width: Int, height: Int, pixels: ByteArray?) {
+	platform.gles3.glTexImage2D(target.convert(), 0, -1, width, height, 0, 0, 0, pixels?.refTo(0))
+}
 
 actual fun glGetProgramiv(program: Int, pname: Int, params: glIntBuffer) = platform.gles3.glGetProgramiv(program.convert(), pname.convert(), params)
 actual fun glGetProgramInfoLog(program: Int): String = memScoped {
@@ -87,5 +90,3 @@ actual fun glGetShaderInfoLog(shader: Int): String = memScoped {
 }
 
 actual fun glGetError(): Int = platform.gles3.glGetError().toInt()
-
-actual fun ByteArray.toGlBuffer(): glBuffer = refTo(0)
